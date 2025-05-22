@@ -1,0 +1,88 @@
+Here’s a clean, updated full app structure for your GitHub repo, integrating the latest onboarding logic, runner verification flow, and user role distinction.
+
+⸻
+
+Full App Structure Overview (Proposed)
+
+src/
+├── App.tsx                      # Main app entry point
+├── layout.tsx                   # Global layout
+├── main.tsx                     # Vite + React entry
+├── index.css                    # Global styles (Tailwind)
+├── App.css                      # App-wide styles
+├── firebase.ts                  # Firebase config (if used)
+├── vite-env.d.ts                # TypeScript/Vite env types
+│
+├── (unauth)/                   # Publicly accessible pages
+│   ├── layout.tsx
+│   ├── splash/
+│   │   ├── SplashOne.tsx       # Initial splash screen
+│   │   └── SplashTwo.tsx       # “Anything you want…” screen
+│   ├── get-started/page.tsx    # Choose: Requester or Runner
+│   ├── login/page.tsx
+│   └── signup/
+│       ├── RequesterSignup.tsx
+│       └── RunnerSignup.tsx    # Starts runner verification
+│
+├── (auth)/                     # Authenticated user routes
+│   ├── layout.tsx
+│   ├── dashboard/
+│   │   ├── RequesterDashboard.tsx
+│   │   └── RunnerDashboard.tsx
+│   ├── errands/
+│   │   ├── page.tsx
+│   │   ├── RunnerLiveMap.tsx
+│   │   ├── RunnerNearbyJobAlert.tsx
+│   │   └── RunnerNearbyJobsList.tsx
+│   ├── profile/
+│   │   └── page.tsx
+│   └── runner-verification/
+│       ├── layout.tsx
+│       ├── Step1_DocumentUpload.tsx
+│       ├── Step2_BackgroundCheck.tsx
+│       ├── Step3_VehicleInspection.tsx
+│       ├── Step4_SelfieVerification.tsx
+│       └── VerificationComplete.tsx   # Status or pending screen
+│
+├── pages/                      # Internal/static routes
+│   ├── admin/
+│   │   ├── AdminJobsPage.tsx
+│   │   ├── EarningsDashboard.tsx
+│   │   └── ServiceManager.tsx
+│   └── requester/
+│       ├── CreateJobPage.tsx
+│       ├── RequesterDashboard.tsx
+│       ├── LoginPage.tsx
+│       └── MyErrands.tsx         # Planned
+│       └── TrackJob.tsx          # Planned (real-time map)
+│
+├── components/                 # Shared components
+│   ├── FeedbackForm.tsx
+│   ├── PaymentButton.tsx
+│   └── modals/
+│       └── JobDetailModal.tsx
+│
+├── assets/                     # Static assets (SVGs, icons, etc.)
+
+
+
+⸻
+
+Verification Flow Entry Point
+	•	Runner signs up → immediately enters runner-verification/
+	•	Each step is a guided wizard screen
+	•	Completion triggers either:
+	•	Activation and redirect to RunnerDashboard.tsx
+	•	Or “pending” status screen (VerificationComplete.tsx)
+
+⸻
+
+Styling/Tech Stack
+	•	TailwindCSS: Global utility-first styling
+	•	React + Vite: Fast dev/build experience
+	•	Supabase (or Firebase): For auth + backend
+	•	Optional: Chart.js for admin/requester analytics
+
+⸻
+
+Would you like a visual sitemap or GitHub README.md file that reflects this exact structure next?

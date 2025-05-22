@@ -1,0 +1,117 @@
+Great — here’s how to implement role-based route protection and navigation logic to properly direct:
+	•	Requesters to their dashboard
+	•	Runners to verification or their dashboard
+	•	Admins to the hidden admin panel
+
+⸻
+
+Step 1: Extend User Schema
+
+You’ll need to ensure your user object has at minimum:
+
+type User = {
+  id: string;
+  role: 'requester' | 'runner' | 'admin';
+  isVerified?: boolean;  // For runners
+};
+
+Where you store this depends on your backend (e.g., Supabase, Firebase). Make sure roles and verification status are set at signup or through admin updates.
+
+⸻
+
+Step 2: Create a ProtectedRoute Wrapper
+
+This wrapper will handle redirects based on role.
+
+// components/ProtectedRoute.tsx
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth'; // your auth hook
+
+const ProtectedRoute = ({ children, requiredRole }: { children: JSX.Element; requiredRole?: string }) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+      } else if (requiredRole && user.role !== requiredRole) {
+        navigate('/unauthorized'); // or default dashboard
+      }
+    }
+  }, [user, loading, navigate]);
+
+  if (loading) return <div>Loading...</div>;
+
+  return children;
+};
+
+export default ProtectedRoute;
+
+
+
+⸻
+
+Step 3: Add Role Routing Logic in App.tsx
+
+Here’s a simplified routing logic using React Router v6+:
+
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
+
+<Routes>
+  {/* Requester Routes */}
+  <Route path="/requester-dashboard" element={
+    <ProtectedRoute requiredRole="requester">
+      <RequesterDashboard />
+    </ProtectedRoute>
+  } />
+
+  {/* Runner Routes */}
+  <Route path="/runner-dashboard" element={
+    <ProtectedRoute requiredRole="runner">
+      {user?.isVerified ? <RunnerDashboard /> : <Navigate to="/runner-verification" />}
+    </ProtectedRoute>
+  } />
+
+  <Route path="/runner-verification" element={
+    <ProtectedRoute requiredRole="runner">
+      <RunnerVerificationWizard />
+    </ProtectedRoute>
+  } />
+
+  {/* Admin Routes (Hidden) */}
+  <Route path="/admin" element={
+    <ProtectedRoute requiredRole="admin">
+      <AdminDashboard />
+    </ProtectedRoute>
+  } />
+</Routes>
+
+
+
+⸻
+
+Step 4: Role-based Redirect on Login
+
+In your login success handler:
+
+if (user.role === 'admin') {
+  navigate('/admin');
+} else if (user.role === 'runner') {
+  navigate(user.isVerified ? '/runner-dashboard' : '/runner-verification');
+} else {
+  navigate('/requester-dashboard');
+}
+
+
+
+⸻
+
+Let me know if you want me to scaffold the files for:
+	•	useAuth() hook
+	•	Role setter during signup
+	•	Redirect fallback (/unauthorized)
+
+Or generate the route file structure for you.

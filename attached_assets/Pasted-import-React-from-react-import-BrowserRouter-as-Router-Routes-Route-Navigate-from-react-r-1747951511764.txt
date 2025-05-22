@@ -1,0 +1,79 @@
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Splash from './page';
+import UnauthLayout from './(unauth)/layout';
+import GetStarted from './(unauth)/get-started/page';
+import Login from './(unauth)/login/page';
+import Signup from './(unauth)/signup/page';
+import AuthLayout from './(auth)/layout';
+import Dashboard from './(auth)/dashboard/page';
+import Profile from './(auth)/profile/page';
+import Errands from './(auth)/errands/page';
+import AdminJobsPage from './pages/admin/AdminJobsPage';
+import EarningsDashboard from './pages/admin/EarningsDashboard';
+import ServiceManager from './pages/admin/ServiceManager';
+import CreateJobPage from './pages/requester/CreateJobPage';
+import RequesterDashboard from './pages/requester/RequesterDashboard';
+import MyErrandsPage from './pages/requester/MyErrandsPage';
+import TrackErrandPage from './pages/requester/TrackErrandPage';
+import WalletDashboard from './(auth)/wallet/WalletDashboard';
+import TransactionHistory from './(auth)/wallet/TransactionHistory';
+import SubscriptionPage from './(auth)/subscription/SubscriptionPage';
+import RunnerDashboard from './(auth)/runner-dashboard/page';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { getAuth } from 'firebase/auth';
+
+function AdminRoute({ children }: { children: React.ReactElement }) {
+  const [user, loading] = useAuthState(getAuth());
+  if (loading) return <div>Loading...</div>;
+  // Replace with your admin check logic (e.g., user?.role === 'admin')
+  if (!user || user.email !== 'admin@example.com') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+}
+
+function App() {
+  return (
+    <Router>
+      <Routes>
+        {/* Splash */}
+        <Route path="/" element={<Splash />} />
+        {/* Unauthenticated routes */}
+        <Route element={<UnauthLayout />}>
+          <Route path="get-started" element={<GetStarted />} />
+          <Route path="login" element={<Login />} />
+          <Route path="signup" element={<Signup />} />
+        </Route>
+        {/* Authenticated routes */}
+        <Route element={<AuthLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="errands" element={<Errands />} />
+          {/* Requester pages */}
+          <Route path="requester/dashboard" element={<RequesterDashboard />} />
+          <Route path="requester/create" element={<CreateJobPage />} />
+          <Route path="requester/my-errands" element={<MyErrandsPage />} />
+          <Route path="requester/track/:id" element={<TrackErrandPage />} />
+          {/* Wallet pages */}
+          <Route path="wallet" element={<WalletDashboard />} />
+          <Route path="wallet/transactions" element={<TransactionHistory />} />
+          {/* Subscription page */}
+          <Route path="subscription" element={<SubscriptionPage />} />
+          {/* Runner dashboard (post-verification) */}
+          <Route path="runner-dashboard" element={<RunnerDashboard />} />
+        </Route>
+        {/* Admin routes */}
+        <Route path="/admin/jobs" element={<AdminRoute><AdminJobsPage /></AdminRoute>} />
+        <Route path="/admin/earnings" element={<AdminRoute><EarningsDashboard /></AdminRoute>} />
+        <Route path="/admin/services" element={<AdminRoute><ServiceManager /></AdminRoute>} />
+        {/* Legacy route for create-job, redirect to new create */}
+        <Route path="/requester/create-job" element={<Navigate to="/requester/create" replace />} />
+        {/* Catch-all: redirect to splash */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;

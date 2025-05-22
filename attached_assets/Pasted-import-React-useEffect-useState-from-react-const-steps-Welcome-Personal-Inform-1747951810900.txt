@@ -1,0 +1,330 @@
+import React, { useEffect, useState } from 'react';
+
+const steps = [
+  'Welcome',
+  'Personal Information',
+  'Upload Documents',
+  'Consent & Agreement',
+  'Submitted',
+];
+
+const RunnerVerificationPage: React.FC = () => {
+  const [step, setStep] = useState(0);
+  const [form, setForm] = useState({
+    fullName: '',
+    dob: '',
+    nationalId: '',
+    phone: '',
+  });
+  const [touched, setTouched] = useState<{ [k: string]: boolean }>({});
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const [idFront, setIdFront] = useState<File | null>(null);
+  const [idBack, setIdBack] = useState<File | null>(null);
+  const [selfie, setSelfie] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [consent, setConsent] = useState(false);
+  const [agreementError, setAgreementError] = useState<string | null>(null);
+  const [verificationStatus, setVerificationStatus] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [showToast, setShowToast] = useState(false);
+
+  // Step indicator
+  const StepIndicator = () => (
+    <div className="flex items-center justify-center gap-2 mb-6">
+      {steps.slice(0, 4).map((label, i) => (
+        <div key={label} className={`w-3 h-3 rounded-full ${i <= step ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+      ))}
+      <span className="ml-2 text-xs text-gray-500">Step {Math.min(step + 1, 4)} of 4</span>
+    </div>
+  );
+
+  // Validation logic
+  const validate = () => {
+    const errs: { [k: string]: string } = {};
+    if (!form.fullName.trim()) errs.fullName = 'Full name required';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(form.dob)) errs.dob = 'YYYY-MM-DD';
+    if (!/^\d{7,10}$/.test(form.nationalId)) errs.nationalId = '7-10 digit ID/TRN';
+    if (!/^\d{10}$/.test(form.phone)) errs.phone = '10 digit phone';
+    return errs;
+  };
+
+  // Auto-formatting for date and phone
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    let v = value;
+    if (name === 'dob') v = v.replace(/[^\d-]/g, '').slice(0, 10);
+    if (name === 'phone') v = v.replace(/\D/g, '').slice(0, 10);
+    if (name === 'nationalId') v = v.replace(/\D/g, '').slice(0, 10);
+    setForm(f => ({ ...f, [name]: v }));
+    setTouched(t => ({ ...t, [name]: true }));
+  };
+
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errs = validate();
+    setErrors(errs);
+    if (Object.keys(errs).length === 0) {
+      setStep(2); // Go to next step
+    }
+  };
+
+  // Step 0: Welcome
+  if (step === 0) {
+    return (
+      <div className="p-4 max-w-lg mx-auto text-center">
+        <h1 className="text-2xl font-bold mb-2">Become a Verified Runner</h1>
+        <p className="text-gray-600 mb-6">Complete this quick 3-step process to unlock errands and start earning.</p>
+        <button
+          className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 transition"
+          onClick={() => setStep(1)}
+        >
+          Let's Begin
+        </button>
+      </div>
+    );
+  }
+
+  // Step 1: Personal Information
+  if (step === 1) {
+    return (
+      <div className="p-4 max-w-lg mx-auto">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <div className="w-3 h-3 rounded-full bg-gray-300" />
+          <div className="w-3 h-3 rounded-full bg-gray-300" />
+          <span className="ml-2 text-xs text-gray-500">Step 1 of 4</span>
+        </div>
+        <h2 className="text-xl font-bold mb-2 text-center">Personal Information</h2>
+        <form onSubmit={handleNext} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Full Name</label>
+            <input
+              name="fullName"
+              value={form.fullName}
+              onChange={handleChange}
+              onBlur={() => setTouched(t => ({ ...t, fullName: true }))}
+              className={`border rounded px-3 py-2 w-full ${touched.fullName && errors.fullName ? 'border-red-500' : ''}`}
+              placeholder="e.g. Jane Doe"
+              autoComplete="name"
+            />
+            {touched.fullName && errors.fullName && <div className="text-red-500 text-xs mt-1">{errors.fullName}</div>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Date of Birth</label>
+            <input
+              name="dob"
+              value={form.dob}
+              onChange={handleChange}
+              onBlur={() => setTouched(t => ({ ...t, dob: true }))}
+              className={`border rounded px-3 py-2 w-full ${touched.dob && errors.dob ? 'border-red-500' : ''}`}
+              placeholder="YYYY-MM-DD"
+              autoComplete="bday"
+            />
+            {touched.dob && errors.dob && <div className="text-red-500 text-xs mt-1">{errors.dob}</div>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">National ID or TRN</label>
+            <input
+              name="nationalId"
+              value={form.nationalId}
+              onChange={handleChange}
+              onBlur={() => setTouched(t => ({ ...t, nationalId: true }))}
+              className={`border rounded px-3 py-2 w-full ${touched.nationalId && errors.nationalId ? 'border-red-500' : ''}`}
+              placeholder="e.g. 123456789"
+              autoComplete="off"
+            />
+            {touched.nationalId && errors.nationalId && <div className="text-red-500 text-xs mt-1">{errors.nationalId}</div>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Phone Number</label>
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              onBlur={() => setTouched(t => ({ ...t, phone: true }))}
+              className={`border rounded px-3 py-2 w-full ${touched.phone && errors.phone ? 'border-red-500' : ''}`}
+              placeholder="e.g. 8761234567"
+              autoComplete="tel"
+            />
+            {touched.phone && errors.phone && <div className="text-red-500 text-xs mt-1">{errors.phone}</div>}
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
+          >
+            Next
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // Step 2: Upload Documents
+  if (step === 2) {
+    const handleFile = (setter: (f: File) => void) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      if (!['image/jpeg', 'image/png'].includes(file.type)) {
+        setUploadError('Only JPG/PNG allowed');
+        return;
+      }
+      setUploadError(null);
+      setter(file);
+    };
+    return (
+      <div className="p-4 max-w-lg mx-auto">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <div className="w-3 h-3 rounded-full bg-gray-300" />
+          <span className="ml-2 text-xs text-gray-500">Step 2 of 4</span>
+        </div>
+        <h2 className="text-xl font-bold mb-2 text-center">Upload Documents</h2>
+        <form className="space-y-4" onSubmit={e => { e.preventDefault(); setStep(3); }}>
+          <div>
+            <label className="block text-sm font-medium mb-1">ID (Front)</label>
+            <input type="file" accept="image/jpeg,image/png" onChange={handleFile(f => setIdFront(f))} />
+            {idFront && <img src={URL.createObjectURL(idFront)} alt="ID Front" className="mt-2 h-20 rounded shadow" />}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">ID (Back)</label>
+            <input type="file" accept="image/jpeg,image/png" onChange={handleFile(f => setIdBack(f))} />
+            {idBack && <img src={URL.createObjectURL(idBack)} alt="ID Back" className="mt-2 h-20 rounded shadow" />}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Selfie</label>
+            <input type="file" accept="image/jpeg,image/png" onChange={handleFile(f => setSelfie(f))} />
+            {selfie && <img src={URL.createObjectURL(selfie)} alt="Selfie" className="mt-2 h-20 rounded-full shadow" />}
+          </div>
+          {uploadError && <div className="text-red-500 text-xs">{uploadError}</div>}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
+            disabled={!idFront || !idBack || !selfie}
+          >
+            Next
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // Step 3: Consent & Agreement
+  if (step === 3) {
+    const handleSubmit = (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!consent) {
+        setAgreementError('You must consent to continue.');
+        return;
+      }
+      setAgreementError(null);
+      setStep(4); // Go to submitted/pending step
+    };
+    return (
+      <div className="p-4 max-w-lg mx-auto">
+        <div className="mb-6 flex items-center justify-center gap-2">
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <div className="w-3 h-3 rounded-full bg-blue-600" />
+          <span className="ml-2 text-xs text-gray-500">Step 3 of 4</span>
+        </div>
+        <h2 className="text-xl font-bold mb-2 text-center">Consent & Agreement</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="consent"
+              checked={consent}
+              onChange={e => setConsent(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <label htmlFor="consent" className="text-sm">
+              I consent to a background check and agree to the
+              <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">Terms of Service</a>
+              &
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline ml-1">Privacy Policy</a>.
+            </label>
+          </div>
+          {agreementError && <div className="text-red-500 text-xs">{agreementError}</div>}
+          {/* Optional: signature pad or digital agreement */}
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-2 rounded font-semibold hover:bg-blue-700 transition"
+            disabled={!consent}
+          >
+            Submit for Review
+          </button>
+        </form>
+      </div>
+    );
+  }
+
+  // Step 4: Submitted/Pending
+  if (step === 4) {
+    useEffect(() => {
+      if (step === 4) {
+        // TODO: Replace with real backend polling/status check
+        const timer = setTimeout(() => {
+          // For demo: randomly approve or reject
+          const status = Math.random() > 0.5 ? 'approved' : 'rejected';
+          setVerificationStatus(status as 'approved' | 'rejected');
+          if (status === 'approved') {
+            setShowToast(true);
+            setTimeout(() => {
+              setShowToast(false);
+              window.location.href = '/runner-dashboard';
+            }, 2000);
+          }
+        }, 2000);
+        return () => clearTimeout(timer);
+      }
+    }, [step]);
+
+    if (verificationStatus === 'pending') {
+      return (
+        <div className="p-4 max-w-lg mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-2 text-green-700">Thanks for submitting!</h2>
+          <p className="mb-4">Your info is under review. This usually takes 24–48 hours.</p>
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 transition"
+            onClick={() => window.location.href = "/requester/dashboard"}
+          >
+            Return to Home
+          </button>
+        </div>
+      );
+    }
+    if (verificationStatus === 'approved') {
+      return (
+        <div className="p-4 max-w-lg mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-2 text-green-700">You’re now a verified runner!</h2>
+          <p className="mb-4">Redirecting to your dashboard...</p>
+          {showToast && <div className="bg-green-100 text-green-700 px-4 py-2 rounded shadow inline-block">Verification approved!</div>}
+        </div>
+      );
+    }
+    if (verificationStatus === 'rejected') {
+      return (
+        <div className="p-4 max-w-lg mx-auto text-center">
+          <h2 className="text-2xl font-bold mb-2 text-red-700">Verification Failed</h2>
+          <p className="mb-4">There was an issue with your submission. Please check your email or contact support for details.</p>
+          <button
+            className="bg-blue-600 text-white px-6 py-2 rounded font-semibold hover:bg-blue-700 transition"
+            onClick={() => { setStep(1); setVerificationStatus('pending'); }}
+          >
+            Retry Verification
+          </button>
+        </div>
+      );
+    }
+  }
+
+  return (
+    <div className="p-4 max-w-lg mx-auto">
+      <StepIndicator />
+      {/* TODO: Render step-specific content here */}
+      <div className="text-center text-gray-400">Step {step} content coming soon...</div>
+    </div>
+  );
+};
+
+export default RunnerVerificationPage;

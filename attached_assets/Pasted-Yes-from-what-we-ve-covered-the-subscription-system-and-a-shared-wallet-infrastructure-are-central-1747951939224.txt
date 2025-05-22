@@ -1,0 +1,76 @@
+Yes, from what we’ve covered, the subscription system and a shared wallet infrastructure are central components of your app’s business model — but they haven’t yet been fully integrated into your GitHub structure. Here’s how to bring them into alignment:
+
+⸻
+
+1. Shared Wallet System (Runner + Requester)
+
+Proposed Structure:
+
+src/
+├── (auth)/
+│   └── wallet/
+│       ├── WalletDashboard.tsx         # Unified view for both roles
+│       ├── AddFundsModal.tsx           # Top-up interface
+│       ├── TransactionHistory.tsx      # Past charges, refunds, rewards
+│       └── RequestRefundModal.tsx      # Refund request UI
+
+Functionality:
+	•	Balances stored via Supabase/Firebase per user
+	•	Used for:
+	•	Paying for errands
+	•	Crediting earnings (for runners)
+	•	Refunding canceled errands
+	•	Holding promotional credits or bonuses
+	•	Connects to Stripe, WiPay, or Lynk
+
+⸻
+
+2. Subscription Tiers Integration
+
+Proposed Structure:
+
+src/
+├── (auth)/
+│   └── subscription/
+│       ├── SubscriptionPage.tsx        # View & select plans
+│       ├── PlanDetailsModal.tsx        # Show benefits of each
+│       └── ManageSubscription.tsx      # Change/cancel plan
+
+Backend Fields to Add:
+
+users {
+  subscriptionPlan: 'basic' | 'premium' | 'business',
+  subscriptionStartDate: timestamp,
+  errandsUsedThisCycle: number,
+  billingStatus: 'active' | 'past_due' | 'canceled',
+  walletBalance: number,
+  role: 'requester' | 'runner' | 'both'
+}
+
+Logic Integration:
+	•	On checkout, check errandsUsedThisCycle vs allowed plan
+	•	If exceeded, apply appropriate surcharge or deny
+	•	Discounts and perks applied based on subscriptionPlan
+
+⸻
+
+3. Admin Panel Enhancements
+
+pages/
+├── admin/
+│   ├── ViewSubscriptions.tsx        # All users & plans
+│   ├── BillingOverview.tsx          # Payment issues / alerts
+│   └── WalletManagement.tsx         # Admin credit/debit
+
+
+
+⸻
+
+Next Steps
+
+Would you like to:
+	1.	Add the folder structure and placeholder components into your GitHub repo?
+	2.	Start with wallet logic first (refunds, earnings, etc.) or subscription UI first?
+	3.	Generate database schema for Firebase/Supabase tracking of subscriptions and wallets?
+
+Just let me know which direction you want to move first and I’ll scaffold it with precision.
