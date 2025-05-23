@@ -1,25 +1,91 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Eye, Search, Filter } from "lucide-react";
-import { formatDate, formatCurrency, getStatusColor } from "@/lib/utils";
+import { Eye, Search, Filter, ArrowUpDown, User } from "lucide-react";
+import { formatDate, formatCurrency, getStatusColor, getInitials } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import type { Job } from "@shared/schema";
+import JobDetailModal from "../../components/modals/JobDetailModal";
+import type { Job, User as UserType } from "@shared/schema";
+
+type JobSortOption = "latest" | "alphabetical" | "requester" | "status" | "price";
 
 export default function Jobs() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState<JobSortOption>("latest");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["/api/jobs"],
   });
+
+  const { data: users } = useQuery({
+    queryKey: ["/api/users"],
+  });
+
+  // Helper function to format requester name like "Wendell R"
+  const formatRequesterName = (user: UserType) => {
+    if (!user?.fullName) return "Unknown User";
+    const nameParts = user.fullName.trim().split(" ");
+    const firstName = nameParts[0];
+    const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] : "";
+    return lastInitial ? `${firstName} ${lastInitial}` : firstName;
+  };
+
+  // Enhanced sorting and filtering logic
+  const sortedAndFilteredJobs = useMemo(() => {
+    if (!jobs) return [];
+    
+    const jobsWithRequesters = jobs.map((job: Job) => {
+      const requester = users?.find((u: UserType) => u.id === job.requesterId);
+      return { ...job, requester };
+    });
+
+    // Filter by status
+    let filtered = jobsWithRequesters;
+    if (statusFilter !== "all") {
+      filtered = jobsWithRequesters.filter((job: any) => job.status === statusFilter);
+    }
+
+    // Filter by search term
+    if (searchTerm) {
+      filtered = filtered.filter((job: any) => 
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (job.requester && formatRequesterName(job.requester).toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+
+    // Sort the filtered results
+    switch (sortBy) {
+      case "alphabetical":
+        return filtered.sort((a: any, b: any) => a.title.localeCompare(b.title));
+      case "requester":
+        return filtered.sort((a: any, b: any) => {
+          const nameA = a.requester ? formatRequesterName(a.requester) : "zzzz";
+          const nameB = b.requester ? formatRequesterName(b.requester) : "zzzz";
+          return nameA.localeCompare(nameB);
+        });
+      case "status":
+        return filtered.sort((a: any, b: any) => a.status.localeCompare(b.status));
+      case "price":
+        return filtered.sort((a: any, b: any) => parseFloat(b.price) - parseFloat(a.price));
+      case "latest":
+      default:
+        return filtered.sort((a: any, b: any) => {
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+          return dateB - dateA;
+        });
+    }
+  }, [jobs, users, statusFilter, searchTerm, sortBy]);
 
   const updateJobMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number; updates: Partial<Job> }) => {

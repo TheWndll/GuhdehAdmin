@@ -24,6 +24,48 @@ export default function Runners() {
     queryKey: ["/api/runners"],
   });
 
+  const { data: users } = useQuery({
+    queryKey: ["/api/users"],
+  });
+
+  // Enhanced sorting logic
+  const sortedRunners = useMemo(() => {
+    if (!runners) return [];
+    
+    const runnersWithUsers = runners.map((runner: Runner) => {
+      const user = users?.find((u: UserType) => u.id === runner.userId);
+      return { ...runner, user };
+    });
+
+    switch (sortBy) {
+      case "name":
+        return runnersWithUsers.sort((a, b) => {
+          const nameA = a.user?.fullName || "";
+          const nameB = b.user?.fullName || "";
+          return nameA.localeCompare(nameB);
+        });
+      case "jobs":
+        // Sort by number of jobs completed (would need job count data)
+        return runnersWithUsers.sort((a, b) => {
+          // For now, sort by verification status priority
+          const statusOrder = { pending: 0, approved: 2, rejected: 1 };
+          return statusOrder[a.verificationStatus as keyof typeof statusOrder] - 
+                 statusOrder[b.verificationStatus as keyof typeof statusOrder];
+        });
+      case "status":
+        return runnersWithUsers.sort((a, b) => {
+          return a.verificationStatus.localeCompare(b.verificationStatus);
+        });
+      case "recent":
+      default:
+        return runnersWithUsers.sort((a, b) => {
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+          return dateB - dateA;
+        });
+    }
+  }, [runners, users, sortBy]);
+
   const verifyRunnerMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
       const response = await fetch(`/api/runners/${id}/verify`, {
@@ -66,14 +108,36 @@ export default function Runners() {
     );
   }
 
+  const handleVerifyRunner = (runner: any) => {
+    setSelectedRunner(runner);
+    setSelectedUser(runner.user);
+    setIsVerifyModalOpen(true);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Runner Management</h3>
           <p className="text-sm text-muted-foreground">
-            Manage and verify runner accounts
+            Manage and verify runner accounts ({sortedRunners?.length || 0} total)
           </p>
+        </div>
+        
+        {/* Sorting Controls */}
+        <div className="flex items-center gap-3">
+          <ArrowUpDown className="w-4 h-4 text-slate-500" />
+          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+            <SelectTrigger className="w-48">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Latest First</SelectItem>
+              <SelectItem value="name">Alphabetical (A-Z)</SelectItem>
+              <SelectItem value="status">By Status</SelectItem>
+              <SelectItem value="jobs">By Priority</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

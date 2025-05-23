@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,10 +9,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Building2, MapPin, Tag } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Service, InsertService } from "@shared/schema";
+
+const serviceCategories = [
+  { id: 'auto', name: 'Auto Services', description: 'Car parts, vehicle services', icon: '🚗' },
+  { id: 'gas', name: 'Gas Station', description: 'Fuel services, convenience', icon: '⛽' },
+  { id: 'gov', name: 'Government', description: 'Official services, documentation', icon: '🏛️' },
+  { id: 'medical', name: 'Medical & Pharmacy', description: 'Healthcare, prescriptions', icon: '🏥' },
+  { id: 'grocery', name: 'Grocery & Food', description: 'Supermarkets, food stores', icon: '🛒' },
+  { id: 'restaurant', name: 'Restaurant', description: 'Food pickup, catering', icon: '🍽️' },
+  { id: 'retail', name: 'Retail Shopping', description: 'General retail, electronics', icon: '🛍️' },
+  { id: 'courier', name: 'Courier & Shipping', description: 'Package services', icon: '📦' },
+  { id: 'bank', name: 'Banking & Finance', description: 'Financial services', icon: '🏦' },
+  { id: 'utility', name: 'Utility Services', description: 'Bills, municipal services', icon: '⚡' },
+  { id: 'print', name: 'Print & Office', description: 'Printing, office supplies', icon: '🖨️' },
+  { id: 'legal', name: 'Legal Services', description: 'Law firms, notary', icon: '⚖️' },
+  { id: 'travel', name: 'Travel & Transport', description: 'Transport, travel agencies', icon: '✈️' },
+  { id: 'edu', name: 'Education', description: 'Schools, educational services', icon: '🎓' },
+  { id: 'home', name: 'Home Services', description: 'Hardware, home improvement', icon: '🏠' },
+  { id: 'places', name: 'Google Places', description: 'Real-time business lookup via Google Places API', icon: '📍' },
+];
 
 export default function Services() {
   const [isCreating, setIsCreating] = useState(false);
@@ -178,6 +198,65 @@ export default function Services() {
         <div>
           <h3 className="text-lg font-semibold">Service Management</h3>
           <p className="text-sm text-muted-foreground">
+            Manage service categories and pricing ({services?.length || 0} total)
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <Link href="/business-signup">
+            <Button variant="outline" className="gap-2">
+              <Building2 className="w-4 h-4" />
+              Add Business
+            </Button>
+          </Link>
+          <Button
+            onClick={() => {
+              setIsCreating(true);
+              setEditingService(null);
+              setFormData({
+                name: "",
+                description: "",
+                category: "",
+                basePrice: "",
+                pricePerKm: "",
+                isActive: true,
+              });
+            }}
+            className="gap-2"
+          >
+            <Plus className="w-4 h-4" />
+            Add Service
+          </Button>
+        </div>
+      </div>
+
+      {/* Service Categories Overview */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Tag className="w-5 h-5" />
+            Service Categories
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {serviceCategories.map((category) => (
+              <div
+                key={category.id}
+                className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{category.icon}</span>
+                  <div>
+                    <h4 className="font-medium">{category.name}</h4>
+                    <p className="text-sm text-muted-foreground">{category.description}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
             Configure pricing and service types
           </p>
         </div>
