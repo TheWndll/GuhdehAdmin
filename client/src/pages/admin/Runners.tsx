@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { UserCheck, UserX, Eye } from "lucide-react";
-import { formatDate, getStatusColor } from "@/lib/utils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { UserCheck, UserX, Eye, ArrowUpDown, User } from "lucide-react";
+import { formatDate, getStatusColor, getInitials } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import type { Runner } from "@shared/schema";
+import VerifyRunnerModal from "../../components/modals/VerifyRunnerModal";
+import type { Runner, User as UserType } from "@shared/schema";
+
+type SortOption = "name" | "jobs" | "recent" | "status";
 
 export default function Runners() {
   const [selectedRunner, setSelectedRunner] = useState<Runner | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UserType | null>(null);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

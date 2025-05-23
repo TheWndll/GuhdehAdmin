@@ -1,0 +1,159 @@
+Copy that. Here’s your full scaffold for the
+Guhdeh Requester Dashboard – Category Navigator + Service Brands
+Codename: GUHDEH-REQ-DASH.SCAFFOLD-V1 🧑‍💻✨
+
+⸻
+
+✅ Scaffold Structure (React + Tailwind Ready)
+
+Dashboard Layout Plan
+
+/requester-dashboard/
+├── components/
+│   ├── ServiceCategoryTile.tsx
+│   ├── ServiceBrandBanner.tsx
+│   └── QuickActionBar.tsx
+├── pages/
+│   └── Dashboard.tsx
+└── types/
+    └── categories.ts
+
+
+
+⸻
+
+Data Models
+
+categories.ts
+
+export const serviceCategories = [
+  { id: 'auto', name: 'Auto', description: 'Pick up car parts, vehicle drop-off' },
+  { id: 'gas', name: 'Gas Station', description: 'Top up gas, deliver fuel can' },
+  { id: 'gov', name: 'Government', description: 'Pay traffic tickets, submit docs' },
+  { id: 'medical', name: 'Medical', description: 'Pick up prescriptions, deliver meds' },
+  { id: 'grocery', name: 'Grocery', description: 'Buy grocery list, price check' },
+  { id: 'restaurant', name: 'Restaurant', description: 'Food pickup' },
+  { id: 'retail', name: 'Retail', description: 'Get items from Azans, Courts' },
+  { id: 'courier', name: 'Courier/Delivery', description: 'Drop off packages' },
+  { id: 'bank', name: 'Banking/ATM', description: 'Deposit or withdraw on behalf' },
+  { id: 'utility', name: 'Utility', description: 'Pay light/water bills' },
+  { id: 'print', name: 'Print & Office', description: 'Print & bind, drop off docs' },
+  { id: 'legal', name: 'Legal', description: 'Deliver documents to a lawyer' },
+  { id: 'travel', name: 'Travel', description: 'Buy bus ticket, drop off ID' },
+  { id: 'edu', name: 'Education', description: 'School drop-off, pickup books' },
+  { id: 'home', name: 'Home Services', description: 'Buy lightbulbs, fix plumbing' },
+];
+
+
+
+⸻
+
+serviceBrands.ts
+
+export const serviceBrands = [
+  {
+    id: 'guhdeh-rnnr',
+    name: 'Guhdeh Rnnr',
+    description: 'General errands: groceries, delivery, pickups',
+  },
+  {
+    id: 'crafty',
+    name: 'Crafty by Guhdeh',
+    description: 'Film & TV production runner services (craft runs, supplies, prop shopping)',
+  },
+  {
+    id: 'guhdeh-plus',
+    name: 'Guhdeh +',
+    description: 'Premium support for sensitive financial tasks — e.g. bank runs',
+  },
+  {
+    id: 'muuv',
+    name: 'MUUV X Guhdeh',
+    description: 'Small haulage, moving services, equipment pickup/delivery',
+  },
+  {
+    id: 'holdaspot',
+    name: 'Hold-a-Spot',
+    description: 'Queue holder for gov & corporate services (TAJ, COJ, PICA)',
+  },
+];
+
+
+
+⸻
+
+✅ UI Concept (React JSX Structure)
+
+import { serviceCategories } from '../types/categories';
+import { serviceBrands } from '../types/serviceBrands';
+import ServiceCategoryTile from '../components/ServiceCategoryTile';
+import ServiceBrandBanner from '../components/ServiceBrandBanner';
+
+export default function Dashboard() {
+  return (
+    <div className="p-4 space-y-6">
+      <h2 className="text-xl font-bold text-gray-800">Book an Errand</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {serviceCategories.map(cat => (
+          <ServiceCategoryTile key={cat.id} category={cat} />
+        ))}
+      </div>
+
+      <h3 className="text-lg font-semibold text-gray-700 mt-6">Guhdeh Services</h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {serviceBrands.map(brand => (
+          <ServiceBrandBanner key={brand.id} brand={brand} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+
+
+⸻
+
+Reusable Components
+
+ServiceCategoryTile.tsx
+
+export default function ServiceCategoryTile({ category }) {
+  return (
+    <div className="p-3 border rounded hover:shadow cursor-pointer bg-white">
+      <h4 className="font-semibold text-sm">{category.name}</h4>
+      <p className="text-xs text-gray-500">{category.description}</p>
+    </div>
+  );
+}
+
+ServiceBrandBanner.tsx
+
+export default function ServiceBrandBanner({ brand }) {
+  return (
+    <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded shadow-sm">
+      <h5 className="font-bold">{brand.name}</h5>
+      <p className="text-sm text-gray-600">{brand.description}</p>
+    </div>
+  );
+}
+
+
+
+⸻
+
+✅ Ready to Ship?
+
+Say:
+
+Generate ZIP
+or
+Push scaffold to GitHub
+
+Want this hooked into /create errand logic next?
+
+Say:
+
+Wire this into the Create Errand flow
+
+This dashboard is clean, usable, and fast. Let’s get it deployed and into users’ hands.
+You’re building the logistics front end of the island, boss. 🧑‍💻🇯🇲✅

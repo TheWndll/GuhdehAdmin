@@ -1,18 +1,32 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
-import { Activity, Users, DollarSign, AlertTriangle } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Activity, Users, DollarSign, AlertTriangle, UserCheck, Gavel, Plus } from "lucide-react";
 import RevenueChart from "../../components/charts/RevenueChart";
 import JobStatusChart from "../../components/charts/JobStatusChart";
+import VerifyRunnerModal from "../../components/modals/VerifyRunnerModal";
 import { formatCurrency, getStatusColor, getInitials } from "@/lib/utils";
-import type { Analytics, Job } from "@shared/schema";
+import type { Analytics, Job, Runner, User } from "@shared/schema";
 
 export default function Dashboard() {
+  const [selectedRunner, setSelectedRunner] = useState<Runner | null>(null);
+  const [isVerifyModalOpen, setIsVerifyModalOpen] = useState(false);
+
   const { data: analytics } = useQuery({
     queryKey: ["/api/analytics"],
   });
 
   const { data: recentJobs } = useQuery({
     queryKey: ["/api/jobs/recent"],
+  });
+
+  const { data: pendingRunners } = useQuery({
+    queryKey: ["/api/runners/pending"],
+  });
+
+  const { data: openDisputes } = useQuery({
+    queryKey: ["/api/disputes/open"],
   });
 
   const statsCards = [
@@ -46,8 +60,59 @@ export default function Dashboard() {
     },
   ];
 
+  const handleVerifyRunner = () => {
+    if (pendingRunners && pendingRunners.length > 0) {
+      setSelectedRunner(pendingRunners[0]);
+      setIsVerifyModalOpen(true);
+    }
+  };
+
   return (
     <div className="space-y-8">
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-emerald-600" />
+              Verify Runners
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 mb-4">
+              {pendingRunners?.length || 0} runners waiting for verification
+            </p>
+            <Button 
+              onClick={handleVerifyRunner}
+              className="w-full admin-secondary hover:bg-amber-600"
+              disabled={!pendingRunners?.length}
+            >
+              Verify Next Runner
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Gavel className="w-5 h-5 text-red-600" />
+              Resolve Disputes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-slate-600 mb-4">
+              {openDisputes?.length || 0} open disputes need attention
+            </p>
+            <Button 
+              className="w-full"
+              variant="outline"
+              disabled={!openDisputes?.length}
+            >
+              Review Disputes
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statsCards.map((stat) => {
