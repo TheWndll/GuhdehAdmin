@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 11% 98%; /* #F5F7FA */
+  --foreground: 215 25% 17%; /* #1E293B */
+  --muted: 210 11% 96%; /* #F1F5F9 */
+  --muted-foreground: 215 14% 34%; /* #475569 */
+  --popover: 0 0% 100%; /* #FFFFFF */
+  --popover-foreground: 215 25% 17%; /* #1E293B */
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 215 25% 17%; /* #1E293B */
+  --border: 214 13% 91%; /* #E2E8F0 */
+  --input: 214 13% 91%; /* #E2E8F0 */
+  --primary: 215 25% 17%; /* #1E293B */
+  --primary-foreground: 0 0% 100%; /* #FFFFFF */
+  --secondary: 45 93% 47%; /* #F59E0B */
+  --secondary-foreground: 215 25% 17%; /* #1E293B */
+  --accent: 45 93% 95%; /* #FEF3C7 */
+  --accent-foreground: 215 25% 17%; /* #1E293B */
+  --destructive: 0 84% 60%; /* #EF4444 */
+  --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+  --ring: 215 25% 17%; /* #1E293B */
+  --radius: 0.75rem;
+  
+  /* Custom admin colors */
+  --admin-primary: 215 25% 17%; /* #1E293B */
+  --admin-secondary: 45 93% 47%; /* #F59E0B */
+  --admin-accent: 45 93% 95%; /* #FEF3C7 */
+  --admin-sidebar: 215 25% 17%; /* #1E293B */
+  --admin-sidebar-hover: 215 20% 25%; /* #334155 */
+}
+
+.dark {
+  --background: 215 25% 17%; /* #1E293B */
+  --foreground: 0 0% 98%; /* #FAFAFA */
+  --muted: 215 20% 25%; /* #334155 */
+  --muted-foreground: 215 16% 57%; /* #64748B */
+  --popover: 215 25% 17%; /* #1E293B */
+  --popover-foreground: 0 0% 98%; /* #FAFAFA */
+  --card: 215 25% 17%; /* #1E293B */
+  --card-foreground: 0 0% 98%; /* #FAFAFA */
+  --border: 215 20% 25%; /* #334155 */
+  --input: 215 20% 25%; /* #334155 */
+  --primary: 45 93% 47%; /* #F59E0B */
+  --primary-foreground: 215 25% 17%; /* #1E293B */
+  --secondary: 215 20% 25%; /* #334155 */
+  --secondary-foreground: 0 0% 98%; /* #FAFAFA */
+  --accent: 215 20% 25%; /* #334155 */
+  --accent-foreground: 0 0% 98%; /* #FAFAFA */
+  --destructive: 0 62% 51%; /* #DC2626 */
+  --destructive-foreground: 0 0% 98%; /* #FAFAFA */
+  --ring: 45 93% 47%; /* #F59E0B */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  .admin-primary {
+    background-color: hsl(var(--admin-primary));
+    color: white;
+  }
+  
+  .admin-secondary {
+    background-color: hsl(var(--admin-secondary));
+    color: hsl(var(--admin-primary));
+  }
+  
+  .admin-accent {
+    background-color: hsl(var(--admin-accent));
+    color: hsl(var(--admin-primary));
+  }
+  
+  .admin-sidebar-hover {
+    background-color: hsl(var(--admin-sidebar-hover));
+  }
+}
