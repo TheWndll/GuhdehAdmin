@@ -54,6 +54,13 @@ function Router() {
           </AdminLayout>
         </ProtectedRoute>
       </Route>
+      <Route path="/admin/add-business">
+        <ProtectedRoute>
+          <AdminLayout>
+            <Services />
+          </AdminLayout>
+        </ProtectedRoute>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
