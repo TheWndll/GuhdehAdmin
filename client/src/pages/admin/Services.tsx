@@ -68,7 +68,15 @@ export default function Services() {
         title: "Service Created",
         description: "New service has been created successfully.",
       });
-      resetForm();
+      setIsCreating(false);
+      setFormData({
+        name: "",
+        description: "",
+        category: "",
+        basePrice: "",
+        pricePerKm: "",
+        isActive: true,
+      });
     },
     onError: () => {
       toast({
@@ -80,7 +88,7 @@ export default function Services() {
   });
 
   const updateServiceMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<Service> }) => {
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertService> }) => {
       const response = await fetch(`/api/services/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -95,7 +103,8 @@ export default function Services() {
         title: "Service Updated",
         description: "Service has been updated successfully.",
       });
-      resetForm();
+      setIsCreating(false);
+      setEditingService(null);
     },
     onError: () => {
       toast({
@@ -130,19 +139,6 @@ export default function Services() {
     },
   });
 
-  const resetForm = () => {
-    setFormData({
-      name: "",
-      description: "",
-      category: "",
-      basePrice: "",
-      pricePerKm: "",
-      isActive: true,
-    });
-    setIsCreating(false);
-    setEditingService(null);
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -170,7 +166,7 @@ export default function Services() {
       category: service.category,
       basePrice: service.basePrice,
       pricePerKm: service.pricePerKm || "",
-      isActive: service.isActive,
+      isActive: service.isActive || true,
     });
     setIsCreating(true);
   };
@@ -257,17 +253,6 @@ export default function Services() {
           </div>
         </CardContent>
       </Card>
-            Configure pricing and service types
-          </p>
-        </div>
-        <Button
-          onClick={() => setIsCreating(true)}
-          className="admin-secondary hover:bg-amber-600"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Service
-        </Button>
-      </div>
 
       {/* Create/Edit Form */}
       {isCreating && (
@@ -284,7 +269,7 @@ export default function Services() {
                   <Label htmlFor="name">Service Name *</Label>
                   <Input
                     id="name"
-                    value={formData.name}
+                    value={formData.name || ""}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder="e.g., Grocery Shopping"
                     required
@@ -292,75 +277,71 @@ export default function Services() {
                 </div>
                 <div>
                   <Label htmlFor="category">Category *</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(value) => setFormData({ ...formData, category: value })}
-                  >
+                  <Select value={formData.category || ""} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="grocery">Grocery</SelectItem>
-                      <SelectItem value="food">Food Delivery</SelectItem>
-                      <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                      <SelectItem value="documents">Documents</SelectItem>
-                      <SelectItem value="shopping">Shopping</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {serviceCategories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.icon} {cat.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+
               <div>
                 <Label htmlFor="description">Description</Label>
                 <Textarea
                   id="description"
-                  value={formData.description}
+                  value={formData.description || ""}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Describe the service..."
+                  placeholder="Service description"
                 />
               </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="basePrice">Base Price ($) *</Label>
+                  <Label htmlFor="basePrice">Base Price *</Label>
                   <Input
                     id="basePrice"
                     type="number"
                     step="0.01"
-                    value={formData.basePrice}
+                    value={formData.basePrice || ""}
                     onChange={(e) => setFormData({ ...formData, basePrice: e.target.value })}
-                    placeholder="15.00"
+                    placeholder="0.00"
                     required
                   />
                 </div>
                 <div>
-                  <Label htmlFor="pricePerKm">Price per KM ($)</Label>
+                  <Label htmlFor="pricePerKm">Price per Km</Label>
                   <Input
                     id="pricePerKm"
                     type="number"
                     step="0.01"
-                    value={formData.pricePerKm}
+                    value={formData.pricePerKm || ""}
                     onChange={(e) => setFormData({ ...formData, pricePerKm: e.target.value })}
-                    placeholder="2.50"
+                    placeholder="0.00"
                   />
                 </div>
               </div>
+
               <div className="flex items-center space-x-2">
                 <Switch
                   id="isActive"
-                  checked={formData.isActive}
+                  checked={formData.isActive || false}
                   onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 />
                 <Label htmlFor="isActive">Active Service</Label>
               </div>
-              <div className="flex gap-3">
-                <Button
-                  type="submit"
-                  className="admin-secondary hover:bg-amber-600"
-                  disabled={createServiceMutation.isPending || updateServiceMutation.isPending}
-                >
-                  {editingService ? "Update Service" : "Create Service"}
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={createServiceMutation.isPending || updateServiceMutation.isPending}>
+                  {editingService ? "Update" : "Create"} Service
                 </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
                   Cancel
                 </Button>
               </div>
@@ -369,85 +350,80 @@ export default function Services() {
         </Card>
       )}
 
+      {/* Services List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Services ({services?.length || 0})</CardTitle>
+          <CardTitle>Services ({services?.length || 0})</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b">
-                  <th className="text-left py-3 px-4 font-medium">Name</th>
-                  <th className="text-left py-3 px-4 font-medium">Category</th>
-                  <th className="text-left py-3 px-4 font-medium">Base Price</th>
-                  <th className="text-left py-3 px-4 font-medium">Price/KM</th>
-                  <th className="text-left py-3 px-4 font-medium">Status</th>
-                  <th className="text-left py-3 px-4 font-medium">Created</th>
-                  <th className="text-left py-3 px-4 font-medium">Actions</th>
+                  <th className="text-left p-2">Service</th>
+                  <th className="text-left p-2">Category</th>
+                  <th className="text-left p-2">Base Price</th>
+                  <th className="text-left p-2">Per Km</th>
+                  <th className="text-left p-2">Status</th>
+                  <th className="text-left p-2">Created</th>
+                  <th className="text-left p-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {services?.length ? (
-                  services.map((service: Service) => (
-                    <tr key={service.id} className="border-b hover:bg-slate-50">
-                      <td className="py-3 px-4">
+                {services?.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="text-center p-8 text-muted-foreground">
+                      No services found. Create your first service above.
+                    </td>
+                  </tr>
+                ) : (
+                  services?.map((service: Service) => (
+                    <tr key={service.id} className="border-b hover:bg-accent/50">
+                      <td className="p-2">
                         <div>
-                          <p className="font-medium">{service.name}</p>
-                          <p className="text-xs text-slate-500 truncate max-w-32">
-                            {service.description}
-                          </p>
+                          <div className="font-medium">{service.name}</div>
+                          {service.description && (
+                            <div className="text-sm text-muted-foreground">
+                              {service.description}
+                            </div>
+                          )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="p-2">
                         <Badge variant="outline">{service.category}</Badge>
                       </td>
-                      <td className="py-3 px-4">
-                        <span className="font-semibold">
-                          {formatCurrency(service.basePrice)}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4">
+                      <td className="p-2">{formatCurrency(service.basePrice)}</td>
+                      <td className="p-2">
                         {service.pricePerKm ? formatCurrency(service.pricePerKm) : "—"}
                       </td>
-                      <td className="py-3 px-4">
-                        <Badge className={service.isActive ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800"}>
+                      <td className="p-2">
+                        <Badge variant={service.isActive ? "default" : "secondary"}>
                           {service.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </td>
-                      <td className="py-3 px-4">
-                        {service.createdAt ? formatDate(service.createdAt) : "N/A"}
+                      <td className="p-2">
+                        {service.createdAt ? formatDate(service.createdAt) : "—"}
                       </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
+                      <td className="p-2">
+                        <div className="flex gap-1">
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => handleEdit(service)}
                           >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
+                            <Edit className="w-3 h-3" />
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
-                            className="text-red-600 hover:text-red-700"
                             onClick={() => handleDelete(service)}
-                            disabled={deleteServiceMutation.isPending}
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
-                            Delete
+                            <Trash2 className="w-3 h-3" />
                           </Button>
                         </div>
                       </td>
                     </tr>
                   ))
-                ) : (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-slate-500">
-                      No services found
-                    </td>
-                  </tr>
                 )}
               </tbody>
             </table>
