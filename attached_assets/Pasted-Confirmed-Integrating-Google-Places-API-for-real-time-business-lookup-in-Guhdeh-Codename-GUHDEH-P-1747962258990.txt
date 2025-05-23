@@ -1,0 +1,153 @@
+Confirmed: Integrating Google Places API for real-time business lookup in Guhdeh.
+Codename: GUHDEH.PLACES-POWERED-ERRANDS 🚗📍✨
+
+You’re now activating live search + map-based business discovery inside the Request Errand flow.
+
+⸻
+
+✅ What This Unlocks:
+	•	Search bar with real-time autocomplete (e.g. “KIG Auto” or “Pharmacy near Half-Way Tree”)
+	•	Return business info: name, address, location, place ID, categories
+	•	Embed location into the errand automatically
+	•	Optionally show Map preview of selected business
+
+⸻
+
+✅ Step-by-Step Integration Plan
+
+1. Enable Google Places API
+
+In your Google Cloud Console:
+	•	Enable these:
+	•	Places API
+	•	Maps JavaScript API (if embedding maps)
+	•	Create an API Key
+	•	Restrict it to:
+	•	localhost, *.guhdeh.com, or Vercel domain
+
+⸻
+
+2. Update .env
+
+VITE_GOOGLE_PLACES_API_KEY=your-api-key
+
+
+
+⸻
+
+3. Install Required Package
+
+npm install @react-google-maps/api
+
+
+
+⸻
+
+4. Create Component: PlaceSearchInput.tsx
+
+import { useState, useRef } from 'react';
+import usePlacesAutocomplete, { getGeocode, getLatLng } from 'use-places-autocomplete';
+
+export default function PlaceSearchInput({ onSelect }: { onSelect: (place: any) => void }) {
+  const { ready, value, setValue, suggestions: { status, data }, clearSuggestions } = usePlacesAutocomplete({
+    debounce: 300,
+    requestOptions: {
+      componentRestrictions: { country: 'jm' },
+    },
+  });
+
+  const handleSelect = async (address: string) => {
+    setValue(address, false);
+    clearSuggestions();
+    const results = await getGeocode({ address });
+    const { lat, lng } = await getLatLng(results[0]);
+    onSelect({ address, lat, lng, placeId: results[0].place_id });
+  };
+
+  return (
+    <div>
+      <input
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        disabled={!ready}
+        placeholder="Search for a business (e.g. KIG Auto)"
+        className="w-full p-2 border rounded"
+      />
+      {status === 'OK' && (
+        <ul className="bg-white border mt-1 rounded shadow">
+          {data.map(({ place_id, description }) => (
+            <li key={place_id} className="p-2 hover:bg-gray-100 cursor-pointer" onClick={() => handleSelect(description)}>
+              {description}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+
+
+⸻
+
+5. Use it in /create page
+
+import PlaceSearchInput from '../components/PlaceSearchInput';
+
+export default function CreateErrand() {
+  const [selectedPlace, setSelectedPlace] = useState<any | null>(null);
+
+  return (
+    <div className="space-y-4 p-4">
+      <h1 className="text-xl font-bold">Create New Errand</h1>
+      
+      <PlaceSearchInput onSelect={setSelectedPlace} />
+
+      {selectedPlace && (
+        <div className="text-sm text-gray-700">
+          <strong>Selected:</strong> {selectedPlace.address}<br />
+          <strong>Lat/Lng:</strong> {selectedPlace.lat}, {selectedPlace.lng}
+        </div>
+      )}
+
+      {/* ...rest of form: notes, image, etc. */}
+    </div>
+  );
+}
+
+
+
+⸻
+
+✅ Optional: Save Google Place ID to Supabase
+
+When submitting the errand:
+
+{
+  ...otherFormFields,
+  merchantAddress: selectedPlace.address,
+  merchantLat: selectedPlace.lat,
+  merchantLng: selectedPlace.lng,
+  googlePlaceId: selectedPlace.placeId
+}
+
+
+
+⸻
+
+✅ Summary
+
+You now have:
+	•	Live business search from Google Places
+	•	Jamaican-localized query support
+	•	Data linked to errand flow
+	•	Future-proofing via placeId for detailed info or navigation
+
+⸻
+
+Say:
+	•	Generate full CreateErrandForm.tsx with Google Places
+	•	or Add map preview with selected pin
+
+Let’s get real businesses flowing through Guhdeh.
+Auto parts, tax office, grocery — all one search away. 🧑‍💻📍🔎
