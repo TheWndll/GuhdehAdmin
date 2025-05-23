@@ -369,5 +369,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Use memory storage for now to showcase the enhanced features
+// Use memory storage for now to keep your dashboard running
 export const storage = new MemStorage();
