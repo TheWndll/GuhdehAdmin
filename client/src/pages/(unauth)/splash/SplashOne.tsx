@@ -18,9 +18,6 @@ const SplashOne: React.FC = () => {
       <img src="/assets/guhdeh-logo.png" alt="Guhdeh Logo" style={{ width: 120, marginBottom: 32 }} />
       <h1 style={{ fontWeight: 700, fontSize: 32, marginBottom: 16 }}>Welcome to Guhdeh</h1>
       <p style={{ fontSize: 18, color: "#444", marginBottom: 40 }}>Errands & Delivery, Simplified.</p>
-      <button style={{ background: "#ea9e01", color: "#fff", fontWeight: 700, border: "none", borderRadius: 8, padding: "12px 32px", fontSize: 18, cursor: "pointer" }}>
-        Get Started
-      </button>
     </motion.div>
   );
 };
